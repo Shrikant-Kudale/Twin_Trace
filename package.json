@@ -1,0 +1,1 @@
+{ "name": "twintrace", "version": "1.0.0", "private": true, "type": "module", "description": "One product, many names - catalogue dedup for forward deployed engineers", "engines": { "node": ">=18" } }
