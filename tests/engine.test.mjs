@@ -1,0 +1,11 @@
+import vm from 'vm';
+import { read, ok, done } from './_helpers.mjs';
+const ctx = vm.createContext({}); vm.runInContext(read('public/js/engine.js') + ';this.E={prep,sim,verdict}', ctx);
+const { prep, sim, verdict } = ctx.E, v = (a, b, ids) => verdict(sim(prep(a), prep(b, undefined, ids)).s);
+ok(v('Sony WH-1000XM5 Black', 'Sony WH1000XM5 Noise Cancelling Headphones - Black') === 'twin', 'spelling variants of a model number are twins');
+ok(v('Sony WH-1000XM5 Black', 'Sony WH-1000XM4 Headphones Black') === 'diff', 'XM4 is not XM5');
+ok(v('iPhone 15 128GB Black', 'Apple iPhone 15 256GB Black') !== 'twin', 'storage conflict blocks a twin');
+ok(v('iPhone 15 128GB Black', 'Apple iPhone 15 Pro 128GB Black') !== 'twin', 'Pro variant blocks a twin');
+ok(v('iPhone 15 128GB Black', 'Apple iPhone 15 128GB Silver') !== 'twin', 'colour conflict blocks a twin');
+ok(v('Acme Widget WX-4421', 'Totally different title', ['WX4421']) === 'twin', 'identifier match overrides weak titles');
+done();

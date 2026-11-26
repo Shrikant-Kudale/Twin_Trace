@@ -1,0 +1,15 @@
+import { net, call, ok, done } from './_helpers.mjs';
+globalThis.fetch = net();
+const { default: resolve } = await import('../api/resolve.js'), { default: search } = await import('../api/search.js'), { default: verify } = await import('../api/verify.js'), { default: health } = await import('../api/health.js');
+const keys = k => ({ 'x-tt-keys': Buffer.from(JSON.stringify(k)).toString('base64') });
+let r = await call(resolve, { type: 'link', value: 'https://product.example/p' }); ok(r.out.name === 'Logitech MX Master 3S' && r.out.price === 99.99, 'link resolves name and price');
+r = await call(resolve, { type: 'link', value: 'http://127.0.0.1/admin' }); ok(r.code === 500 && /blocked/.test(r.out.error), 'private addresses are blocked');
+r = await call(resolve, { type: 'image', value: 'data:image/jpeg;base64,AAAA' }, keys({ xai: 'k' })); ok(r.out.via === 'xAI Grok' && /XM5/.test(r.out.name), 'photo routed to xAI Grok when a key is supplied');
+r = await call(resolve, { type: 'image', value: 'data:image/jpeg;base64,AAAA' }); ok(r.code === 500 && /AI keys/.test(r.out.error) && r.out.tried.length > 0, 'photo failure explains what to do and lists providers tried');
+r = await call(search, { q: 'Sony WH-1000XM5 Black' }); const d = r.out.results.map(x => x.domain);
+ok(r.out.results.length === 3 && !d.some(x => /reddit/.test(x)), 'search merges sources and drops junk domains');
+ok(r.out.results.some(x => x.ids && x.ids.includes('WH1000XM5B')), 'schema.org identifiers captured from product pages');
+ok(r.out.sources.some(s => !s.ok), 'failed sources are reported, not hidden');
+r = await call(verify, { a: 'Sony WH-1000XM5 Black', b: 'Sony WH1000XM5 black headphones' }); ok(['YES', 'NO'].includes(r.out.verdict) && r.out.provider, 'verify answers with provider');
+r = await call(health, { ping: true }, keys({ xai: 'k' })); ok(r.out.active.xai && r.out.ping.ok, 'health ping succeeds with a key');
+done();
