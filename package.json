@@ -1,1 +1,0 @@
-{"name":"twintrace","version":"3.0.0","private":true,"type":"module","description":"Product identity workbench: find the twins of any product","scripts":{"test":"node tests/engine.test.mjs && node tests/api.test.mjs && node tests/ui.test.mjs"},"engines":{"node":">=18"},"devDependencies":{"jsdom":"^31.0.1"}}
